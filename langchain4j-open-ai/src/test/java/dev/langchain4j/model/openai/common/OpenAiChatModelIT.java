@@ -26,7 +26,6 @@ import static dev.langchain4j.model.openai.OpenAiChatModelName.GPT_4_O_MINI;
 import static dev.langchain4j.model.output.FinishReason.LENGTH;
 import static org.assertj.core.api.Assertions.assertThat;
 
-// TODO move to langchain4j-open-ai module once dependency cycle is resolved
 class OpenAiChatModelIT extends AbstractChatModelIT {
 
     // TODO https://github.com/langchain4j/langchain4j/issues/2219
@@ -89,12 +88,12 @@ class OpenAiChatModelIT extends AbstractChatModelIT {
     }
 
     @Override
-    protected Class<? extends ChatResponseMetadata> chatResponseMetadataType() {
+    protected Class<? extends ChatResponseMetadata> chatResponseMetadataType(ChatModel chatModel) {
         return OpenAiChatResponseMetadata.class;
     }
 
     @Override
-    protected Class<? extends TokenUsage> tokenUsageType() {
+    protected Class<? extends TokenUsage> tokenUsageType(ChatModel chatModel) {
         return OpenAiTokenUsage.class;
     }
 
@@ -194,7 +193,7 @@ class OpenAiChatModelIT extends AbstractChatModelIT {
 
         ChatModel chatModel = defaultModelBuilder()
                 .httpClientBuilder(new MockHttpClientBuilder(mockHttpClient))
-                .maxRetries(1) // it will fail, so no need to retry
+                .maxRetries(0) // it will fail, so no need to retry
                 .build();
 
         // when
@@ -237,7 +236,7 @@ class OpenAiChatModelIT extends AbstractChatModelIT {
         // then
         AiMessage aiMessage = chatResponse.aiMessage();
         assertThat(aiMessage.text()).isNotBlank();
-        assertThat(aiMessage.toolExecutionRequests()).isNull();
+        assertThat(aiMessage.toolExecutionRequests()).isEmpty();
 
         TokenUsage tokenUsage = chatResponse.metadata().tokenUsage();
         assertThat(tokenUsage.inputTokenCount()).isPositive();
@@ -305,7 +304,7 @@ class OpenAiChatModelIT extends AbstractChatModelIT {
         ChatModel chatModel = defaultModelBuilder()
                 .httpClientBuilder(new MockHttpClientBuilder(mockHttpClient))
                 .customHeaders(customHeaders)
-                .maxRetries(1) // it will fail, so no need to retry
+                .maxRetries(0) // it will fail, so no need to retry
                 .build();
 
         ChatRequest chatRequest = ChatRequest.builder()
